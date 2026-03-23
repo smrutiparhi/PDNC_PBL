@@ -81,6 +81,10 @@ export default function App() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const refreshPage = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-50 font-sans flex flex-col selection:bg-emerald-500/30">
       {/* Header */}
@@ -275,6 +279,14 @@ export default function App() {
                     className="w-full py-4 px-6 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-300 rounded-xl font-medium transition-all duration-300"
                   >
                     Load New Dataset
+                  </button>
+
+                  <button
+                    onClick={refreshPage}
+                    className="w-full py-4 px-6 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh Page
                   </button>
                 </div>
               </div>
