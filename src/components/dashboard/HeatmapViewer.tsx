@@ -5,9 +5,11 @@ import { cn } from '../../utils/cn';
 interface HeatmapViewerProps {
   image: string;
   isAnomaly: boolean;
+  reconstructedImage?: string | null;
+  heatmapImage?: string | null;
 }
 
-export default function HeatmapViewer({ image, isAnomaly }: HeatmapViewerProps) {
+export default function HeatmapViewer({ image, isAnomaly, reconstructedImage, heatmapImage }: HeatmapViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -116,8 +118,8 @@ export default function HeatmapViewer({ image, isAnomaly }: HeatmapViewerProps) 
            <div className="w-full h-full flex items-center justify-center p-3 sm:p-5">
              <div className="w-full flex items-center justify-center" style={{ transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`, transition: isDragging ? 'none' : 'transform 0.2s ease-out' }}>
                <div className="relative aspect-square w-full max-h-full rounded-lg overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 pointer-events-auto">
-                  <img src={image} alt="Reconstructed" className="w-full h-full object-cover blur-[2px] contrast-[0.9] saturate-[0.8]" draggable={false} />
-                  <div className="absolute inset-0 bg-zinc-900/10 mix-blend-overlay"></div>
+                  <img src={reconstructedImage || image} alt="Reconstructed" className={cn("w-full h-full object-cover", !reconstructedImage && "blur-[2px] contrast-[0.9] saturate-[0.8]")} draggable={false} />
+                  {!reconstructedImage && <div className="absolute inset-0 bg-zinc-900/10 mix-blend-overlay"></div>}
                </div>
              </div>
            </div>
@@ -135,21 +137,27 @@ export default function HeatmapViewer({ image, isAnomaly }: HeatmapViewerProps) 
            <div className="w-full h-full flex items-center justify-center p-3 sm:p-5">
              <div className="w-full flex items-center justify-center" style={{ transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`, transition: isDragging ? 'none' : 'transform 0.2s ease-out' }}>
                <div className="relative aspect-square w-full max-h-full rounded-lg overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900 pointer-events-auto">
-                 <img src={image} alt="Mask" className="w-full h-full object-cover opacity-80 grayscale contrast-150 mix-blend-multiply" draggable={false} />
-                 {isAnomaly ? (
+                 {heatmapImage ? (
+                    <img src={heatmapImage} alt="Heatmap" className="w-full h-full object-cover" draggable={false} />
+                 ) : (
                     <>
-                      <div className="absolute inset-0" style={{
-                        background: 'radial-gradient(circle at 60% 40%, rgba(244, 63, 94, 0.9) 0%, rgba(225, 29, 72, 0.6) 20%, rgba(251, 146, 60, 0.3) 40%, transparent 60%)'
-                      }}></div>
-                      <div className="absolute inset-0 mix-blend-screen" style={{
-                        background: 'radial-gradient(circle at 35% 75%, rgba(244, 63, 94, 0.7) 0%, rgba(251, 146, 60, 0.2) 25%, transparent 45%)'
-                      }}></div>
+                      <img src={image} alt="Mask" className="w-full h-full object-cover opacity-80 grayscale contrast-150 mix-blend-multiply" draggable={false} />
+                      {isAnomaly ? (
+                         <>
+                           <div className="absolute inset-0" style={{
+                             background: 'radial-gradient(circle at 60% 40%, rgba(244, 63, 94, 0.9) 0%, rgba(225, 29, 72, 0.6) 20%, rgba(251, 146, 60, 0.3) 40%, transparent 60%)'
+                           }}></div>
+                           <div className="absolute inset-0 mix-blend-screen" style={{
+                             background: 'radial-gradient(circle at 35% 75%, rgba(244, 63, 94, 0.7) 0%, rgba(251, 146, 60, 0.2) 25%, transparent 45%)'
+                           }}></div>
+                         </>
+                      ) : (
+                         <div className="absolute inset-0" style={{
+                           background: 'radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 80%)'
+                         }}></div>
+                      )}
                     </>
-                  ) : (
-                    <div className="absolute inset-0" style={{
-                      background: 'radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 80%)'
-                    }}></div>
-                  )}
+                 )}
                </div>
              </div>
            </div>

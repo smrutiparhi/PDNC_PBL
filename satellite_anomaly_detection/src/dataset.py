@@ -46,10 +46,11 @@ def get_dataloaders(data_dir, batch_size=32, img_size=128):
     train_dataset = Subset(full_train_dataset, train_indices)
     val_dataset = Subset(full_test_dataset, val_indices) # use test transform (no aug)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    # Use single-process loading for better Windows/Python compatibility in local runs.
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     # For testing anomaly detection, we use the entire test dataset (normal + anomaly)
-    test_loader = DataLoader(full_test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    test_loader = DataLoader(full_test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     return train_loader, val_loader, test_loader, full_test_dataset.class_to_idx

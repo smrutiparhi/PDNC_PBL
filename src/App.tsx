@@ -1,9 +1,10 @@
 /// <reference types="vite/client" />
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+
 import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Login from './pages/Login';
 
 // Requires VITE_GOOGLE_CLIENT_ID in .env or defaults to a mock for preview purposes
@@ -26,13 +27,15 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Suspense fallback={<div className="min-h-screen bg-[#020202] text-zinc-500 flex items-center justify-center">Loading dashboard...</div>}>
+                  <Dashboard />
+                </Suspense>
               </ProtectedRoute>
-            } 
+            }
           />
         </Routes>
       </BrowserRouter>

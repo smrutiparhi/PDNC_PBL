@@ -18,3 +18,9 @@ __pycache__/
 uv.lock
 pyproject.toml
 .python-version
+
+# Temp and Data
+temp_upload.jpg
+satellite_anomaly_detection/temp_upload.jpg
+satellite_anomaly_detection/data/
+results/

@@ -15,6 +15,7 @@ st.markdown("Upload a satellite image to detect anomalies (like deforestation, i
 
 # Config
 MODEL_PATH = "models/best_autoencoder.pth"
+LOSS_GRAPH_PATH = "results/loss_graph.png"
 DEFAULT_THRESHOLD = 0.015
 
 @st.cache_resource
@@ -67,6 +68,13 @@ if model_loaded:
             # Heatmap RGB for pure stream
             heatmap_rgb = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
             st.image(heatmap_rgb, caption="3. Error Heatmap (Red = Anomalous Areas)", use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("Training and Validation Loss")
+    if os.path.exists(LOSS_GRAPH_PATH):
+        st.image(LOSS_GRAPH_PATH, caption="Autoencoder loss curve", use_container_width=True)
+    else:
+        st.info("No loss graph found yet. Run training to generate results/loss_graph.png.")
             
 st.markdown("---")
 st.markdown("""
