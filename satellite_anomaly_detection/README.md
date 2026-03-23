@@ -1,77 +1,82 @@
 # Anomaly Detection in Satellite Imagery using Convolutional Autoencoders
 
+An unsupervised deep learning pipeline leveraging Convolutional Autoencoders to detect structural and geographic anomalies in satellite imagery without needing labeled anomaly data during training.
+
 ## 🎯 Project Overview
-This project implements an unsupervised deep learning system to detect anomalies in satellite imagery (e.g., deforestation, oil spills, illegal construction). It uses a Convolutional Autoencoder that is trained **only on normal images**. During inference, anomalous regions produce a high reconstruction error, which is used to flag anomalies.
+This system identifies anomalies—such as deforestation, illegal construction, or oil spills—by exclusively learning the visual patterns of "Normal" satellite images. When an anomalous image is passed through the network, the Autoencoder fails to reconstruct the unfamiliar elements, resulting in a high Mean Squared Error (MSE) and highlighting the discrepancies via a Heatmap.
 
-## 🧠 Architecture
-**Convolutional Autoencoder**
-- **Encoder:** 4 Convolutional blocks (Conv2D -> BatchNorm -> ReLU) compressing the 128x128x3 image into a 8x8x256 latent representation.
-- **Bottleneck:** The compressed latent space forces the model to learn the most essential features of "normal" satellite terrain.
-- **Decoder:** 4 Transposed Convolutional blocks reconstructing the image back to 128x128x3, ending with a Sigmoid activation.
-
+## 📦 Folder Structure
 ```text
-Input (128x128x3) 
-  -> Conv2D(32) -> Conv2D(64) -> Conv2D(128) -> Conv2D(256) 
-  -> [Latent Space: 8x8x256] 
-  -> ConvTranspose2d(128) -> ConvTranspose2d(64) -> ConvTranspose2d(32) -> ConvTranspose2d(3) 
-  -> Output (128x128x3)
+satellite_anomaly_detection/
+├── data/                    # Raw & Processed datasets
+│   └── satellite_images_sample/
+│       ├── Normal/          # Used for training & validation
+│       └── Anomaly/         # Used purely for validation/testing
+├── models/                  # Checkpoints & best models
+├── results/                 # Output heatmaps, ROC, Graphs
+├── src/
+│   ├── dataset.py           # Dataloader, Transformations, Image Filtering
+│   ├── model.py             # Architectures: Encoder & Decoder maps
+│   ├── train.py             # Optimizer, MSELoss, Training loops
+│   ├── detect.py            # Latent mappings, threshold algorithms, Heatmap logic
+│   └── evaluate.py          # Validation Metrics: ROC curve, Confusion Matrix, Precision/Recall
+├── app.py                   # Streamlit interactive application
+├── requirements.txt         # Dependencies
+└── README.md                # the documentation
 ```
 
-## 📁 Suggested Datasets
-1. **EuroSAT:** Sentinel-2 satellite images. Use "Forest" or "SeaLake" as normal, and "Highway" or "Industrial" as anomalies.
-2. **Kaggle Satellite Image Classification:** Filter specific classes to act as the normal baseline.
-3. **DeepGlobe Land Cover Classification:** Extract patches of normal terrain vs anomalous terrain.
+## 🛠️ Installation & Setup
 
-## 🚀 Installation & Setup
-
-1. Clone the repository:
+1. **Clone & Navigate**
 ```bash
-git clone https://github.com/yourusername/satellite-anomaly-detection.git
-cd satellite-anomaly-detection
+git clone ...
+cd satellite_anomaly_detection
 ```
 
-2. Install dependencies:
+2. **Install Requirements**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Organize your data:
+3. **Dataset Setup**
+We recommend using [EuroSAT](https://github.com/phelber/EuroSAT) or DeepGlobe Land Cover Datasets. 
+Organize your `data/` folder as follows:
 ```text
-data/
-  normal/      # Contains only normal satellite images
-  anomaly/     # Contains anomalous images (for testing only)
+data/satellite_images_sample/
+├── Normal/
+│   ├── forest_01.jpg
+│   └── ...
+└── Anomaly/
+    ├── deforestation_01.jpg
+    └── ...
 ```
 
-## ⚙️ How to Run
+## 🚀 How to Run
 
-**1. Train the Model:**
+### 1. Training the Model
+To start training the autoencoder exclusively on normal images:
 ```bash
 python src/train.py
 ```
-*This will train the autoencoder and save the best model to `checkpoints/best_autoencoder.pth`.*
+This generates learning curves in `results/loss_graph.png` and saves the checkpoint to `models/best_autoencoder.pth`.
 
-**2. Evaluate the Model:**
+### 2. Evaluate Performance
+To evaluate against anomalous imagery and verify the internal Threshold calculations:
 ```bash
 python src/evaluate.py
 ```
-*This generates the ROC curve, Confusion Matrix, and calculates Precision/Recall/F1-score.*
+This script computes Precision, Recall, F1-Score, and maps the localized Confusion Matrix in the `results/` folder.
 
-**3. Run the Web App:**
+### 3. Run Web App (Streamlit)
+Start the dashboard to upload images and observe real-time anomaly mapping:
 ```bash
 streamlit run app.py
 ```
-*Upload images via the UI to see the reconstruction, error heatmap, and anomaly classification.*
 
-## 📊 Evaluation Metrics
-The project outputs:
-- **Reconstruction Error (MSE):** `||input - reconstructed||^2`
-- **Threshold:** Calculated dynamically as `Mean(Validation_Errors) + k * Std(Validation_Errors)`
-- **ROC Curve & AUC**
-- **Confusion Matrix**
+## 📊 Evaluation & Results
+* **ROCAUC / PR Curves** stored internally per batch inferences.
+* Loss functions use localized Mean Squared Error (MSE) pixel comparisons mapping high discrepancy elements to the top of standard deviations.
 
-## 🖼️ Screenshots
-*(Add your screenshots here)*
-- `loss_graph.png`
-- `roc_curve.png`
-- `confusion_matrix.png`
-- Web App UI showing the Heatmap Overlay.
+*Example Screenshots (Placeholders):*
+![Loss Graph](results/loss_graph.png)
+*(Recreation visualization)*

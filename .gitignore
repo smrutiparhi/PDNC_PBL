@@ -6,3 +6,12 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.pth
+*.onnx
+

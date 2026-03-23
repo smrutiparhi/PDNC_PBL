@@ -60,7 +60,7 @@ export default function DemoShowcase() {
   const baseImage = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop";
 
   return (
-    <section id="demo" className="py-24 bg-[#0a0a0a] relative border-t border-zinc-800/50">
+    <section id="demo" className="py-24 bg-transparent relative text-center">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.03)_0%,transparent_100%)] pointer-events-none" />
       
       <div className="container mx-auto px-6 max-w-6xl">

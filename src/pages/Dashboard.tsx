@@ -6,6 +6,9 @@ import ImageDropzone from '../components/dashboard/ImageDropzone';
 import TerminalLogs from '../components/dashboard/TerminalLogs';
 import MetricsPanel from '../components/dashboard/MetricsPanel';
 import HeatmapViewer from '../components/dashboard/HeatmapViewer';
+import ScanHistory from '../components/dashboard/ScanHistory';
+import ModelRegistry from '../components/dashboard/ModelRegistry';
+import SystemSettings from '../components/dashboard/SystemSettings';
 import { cn } from '../utils/cn';
 
 interface Toast {
@@ -275,35 +278,9 @@ export default function Dashboard() {
           </div>
         )}
 
-          {activeTab === 'history' && (
-             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20 text-center h-[500px] border border-zinc-800/50 rounded-3xl bg-[#0a0a0a]/50 backdrop-blur-sm shadow-xl mt-4">
-                <History className="w-16 h-16 text-zinc-800 mb-6" />
-                <h2 className="text-2xl font-bold text-zinc-100 mb-2">Scan History Empty</h2>
-                <p className="text-zinc-500 max-w-sm mb-6">Your previous anomaly scan logs, segmented arrays, and detection reports will be archived here.</p>
-                <button onClick={() => setActiveTab('scan')} className="px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:text-white text-zinc-300 font-bold rounded-xl transition-all shadow-lg active:scale-95">Start a new scan</button>
-             </motion.div>
-          )}
-
-          {activeTab === 'models' && (
-             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20 text-center h-[500px] border border-zinc-800/50 rounded-3xl bg-[#0a0a0a]/50 backdrop-blur-sm shadow-xl mt-4">
-                <Database className="w-16 h-16 text-zinc-800 mb-6" />
-                <h2 className="text-2xl font-bold text-zinc-100 mb-2">AI Models Registry</h2>
-                <p className="text-zinc-500 max-w-sm mb-6 leading-relaxed">You currently have access to the ResNet-50 v2.4.1-prod weights. Connect your AWS S3 bucket to import custom checkpoints.</p>
-                <button className="px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold rounded-xl transition-all hover:bg-emerald-500/20 shadow-lg active:scale-95">Connect S3 Bucket</button>
-             </motion.div>
-          )}
-
-          {activeTab === 'settings' && (
-             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20 text-center h-[500px] border border-zinc-800/50 rounded-3xl bg-[#0a0a0a]/50 backdrop-blur-sm shadow-xl mt-4">
-                <Settings className="w-16 h-16 text-zinc-800 mb-6" />
-                <h2 className="text-2xl font-bold text-zinc-100 mb-2">System Configuration</h2>
-                <p className="text-zinc-500 max-w-sm mb-6">Warning: Modifying cluster compute quotas or inference thresholds requires Level 2 clearance.</p>
-                <div className="flex gap-4">
-                  <button className="px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:text-white text-zinc-300 font-bold rounded-xl transition-all shadow-lg active:scale-95">Billing Overview</button>
-                  <button className="px-6 py-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 font-bold rounded-xl transition-all shadow-lg active:scale-95">Access Control</button>
-                </div>
-             </motion.div>
-          )}
+          {activeTab === 'history' && <div className="mt-8"><ScanHistory /></div>}
+          {activeTab === 'models' && <div className="mt-8"><ModelRegistry /></div>}
+          {activeTab === 'settings' && <div className="mt-8"><SystemSettings /></div>}
 
         </div>
       </main>
