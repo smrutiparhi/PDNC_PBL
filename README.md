@@ -16,5 +16,9 @@ View your app in AI Studio: https://ai.studio/apps/ee61cb41-dda1-441f-8025-9ed93
 1. Install dependencies:
    `npm install`
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+3. Optional Google SSO setup in [.env.local](.env.local):
+   - `VITE_ENABLE_GOOGLE_AUTH=true`
+   - `VITE_GOOGLE_CLIENT_ID=<your_google_oauth_client_id>`
+   - If not set, the app uses local mock login in development.
+4. Run the app:
    `npm run dev`

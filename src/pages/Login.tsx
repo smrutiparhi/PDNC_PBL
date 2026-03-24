@@ -8,6 +8,19 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+  const googleAuthEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
+  const useGoogleAuth = googleAuthEnabled && googleClientId.length > 0;
+
+  const loginWithMockUser = () => {
+    const mockUser = {
+      name: 'Smruti Parhi',
+      email: 'smrutiparhi81@gmail.com',
+      picture: 'https://ui-avatars.com/api/?name=Smruti+Parhi&background=10b981&color=fff'
+    };
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    navigate('/dashboard');
+  };
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -32,7 +45,16 @@ export default function Login() {
     },
     onError: (error) => {
       console.error('Login Failed', error);
-      setError("Google authentication was aborted or failed.");
+      const oauthErrorCode = (error as { error?: string } | null)?.error;
+
+      // Common in local/dev when a stale or deleted OAuth client ID is used.
+      if (import.meta.env.DEV && oauthErrorCode === 'invalid_client') {
+        setError('Google OAuth client is invalid. Switched to local mock login in development mode.');
+        setTimeout(() => loginWithMockUser(), 800);
+        return;
+      }
+
+      setError('Google authentication was aborted or failed.');
       setIsLoading(false);
     }
   });
@@ -41,16 +63,10 @@ export default function Login() {
     setIsLoading(true);
     setError(null);
 
-    // Bypass real Google auth if no valid Client ID is provided in the .env file
-    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+    // Bypass real Google auth unless explicitly enabled and configured.
+    if (!useGoogleAuth) {
       setTimeout(() => {
-        const mockUser = {
-          name: "Smruti Parhi",
-          email: "smrutiparhi81@gmail.com",
-          picture: "https://ui-avatars.com/api/?name=Smruti+Parhi&background=10b981&color=fff"
-        };
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        navigate('/dashboard');
+        loginWithMockUser();
       }, 1500);
       return;
     }

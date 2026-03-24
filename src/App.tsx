@@ -7,9 +7,10 @@ import Landing from './pages/Landing';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Login from './pages/Login';
 
-// Requires VITE_GOOGLE_CLIENT_ID in .env or uses mock login for development
+// Real Google OAuth is enabled only when both flag and client ID are present.
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const hasGoogleClientId = GOOGLE_CLIENT_ID.trim().length > 0;
+const GOOGLE_AUTH_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
+const useGoogleAuth = GOOGLE_AUTH_ENABLED && GOOGLE_CLIENT_ID.trim().length > 0;
 
 // Auth Guard component to protect the dashboard
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -22,8 +23,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function App() {
-  return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+  const appRoutes = (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -38,6 +38,11 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
-    </GoogleOAuthProvider>
   );
+
+  if (!useGoogleAuth) {
+    return appRoutes;
+  }
+
+  return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{appRoutes}</GoogleOAuthProvider>;
 }
