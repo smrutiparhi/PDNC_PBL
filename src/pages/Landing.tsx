@@ -1,22 +1,25 @@
 import React from 'react';
-import Navbar from '../components/landing/Navbar';
-import Hero from '../components/landing/Hero';
-import DemoShowcase from '../components/landing/DemoShowcase';
-import FeaturesBento from '../components/landing/FeaturesBento';
-import HowItWorks from '../components/landing/HowItWorks';
-import PricingCards from '../components/landing/PricingCards';
-import Footer from '../components/landing/Footer';
+import { Suspense, lazy } from 'react';
+const Navbar = lazy(() => import('../components/landing/Navbar'));
+const Hero = lazy(() => import('../components/landing/Hero'));
+const DemoShowcase = lazy(() => import('../components/landing/DemoShowcase'));
+const FeaturesBento = lazy(() => import('../components/landing/FeaturesBento'));
+const HowItWorks = lazy(() => import('../components/landing/HowItWorks'));
+const PricingCards = lazy(() => import('../components/landing/PricingCards'));
+const Footer = lazy(() => import('../components/landing/Footer'));
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-50 font-sans selection:bg-emerald-500/30">
-      <Navbar />
-      <Hero />
-      <DemoShowcase />
-      <FeaturesBento />
-      <HowItWorks />
-      <PricingCards />
-      <Footer />
+      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        <Navbar />
+        <Hero />
+        <DemoShowcase />
+        <FeaturesBento />
+        <HowItWorks />
+        <PricingCards />
+        <Footer />
+      </Suspense>
     </div>
   );
 }

@@ -40,9 +40,9 @@ export default function App() {
       </BrowserRouter>
   );
 
-  if (!useGoogleAuth) {
-    return appRoutes;
-  }
-
-  return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{appRoutes}</GoogleOAuthProvider>;
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-id"}>
+      {appRoutes}
+    </GoogleOAuthProvider>
+  );
 }
