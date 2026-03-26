@@ -11,70 +11,45 @@ export default function Hero() {
         Dynamic Animated Background Elements
         ========================================
       */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center pt-24 opacity-80 pointer-events-none">
-        <div 
-          className="relative w-full max-w-7xl aspect-[2/1] flex items-center justify-center overflow-visible"
-          style={{ 
-            perspective: '1500px',
-            transform: 'rotateX(60deg) scale(1.8)',
-            transformStyle: 'preserve-3d'
-          }}
-        >
-           <div 
-             className="w-full h-full bg-gradient-to-br from-sky-400 to-blue-600"
-             style={{ 
-               WebkitMaskImage: 'url(/world-mask.png)',
-               maskImage: 'url(/world-mask.png)',
-               WebkitMaskSize: 'contain',
-               maskSize: 'contain',
-               WebkitMaskRepeat: 'no-repeat',
-               maskRepeat: 'no-repeat',
-               WebkitMaskPosition: 'center',
-               maskPosition: 'center',
-               filter: 'drop-shadow(0 20px 80px rgba(14, 165, 233, 0.6))'
-             }}
-           />
-        </div>
-      </div>
       <div className="absolute inset-0 z-0">
         {/* Core Glow Orbs */}
-        <motion.div
+        <motion.div 
           animate={{ x: [0, 50, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[15%] left-[20%] w-[400px] h-[400px] bg-emerald-500/20 rounded-full blur-[120px] opacity-70 mix-blend-screen"
+          className="absolute top-[15%] left-[20%] w-[400px] h-[400px] bg-emerald-500/20 rounded-full blur-[120px] opacity-70 mix-blend-screen" 
         />
-        <motion.div
+        <motion.div 
           animate={{ x: [0, -60, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-[20%] right-[15%] w-[500px] h-[500px] bg-teal-600/20 rounded-full blur-[140px] opacity-60 mix-blend-screen"
+          className="absolute bottom-[20%] right-[15%] w-[500px] h-[500px] bg-teal-600/20 rounded-full blur-[140px] opacity-60 mix-blend-screen" 
         />
-        <motion.div
+        <motion.div 
           animate={{ x: [0, 30, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[600px] h-[600px] bg-cyan-900/40 rounded-full blur-[150px] opacity-40 mix-blend-screen pointer-events-none"
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[600px] h-[600px] bg-cyan-900/40 rounded-full blur-[150px] opacity-40 mix-blend-screen pointer-events-none" 
         />
-
+        
         {/* Orbital Satellite Alpha - Left to Right */}
         <motion.div
-          animate={{ left: ['-30%', '120%'], top: ['20%', '0%'], rotate: [15, -10] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="absolute z-0 opacity-20 pointer-events-none drop-shadow-[0_0_80px_rgba(16,185,129,0.4)]"
+           animate={{ left: ['-30%', '120%'], top: ['20%', '0%'], rotate: [15, -10] }}
+           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+           className="absolute z-0 opacity-20 pointer-events-none drop-shadow-[0_0_80px_rgba(16,185,129,0.4)]"
         >
-          <Satellite className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] text-zinc-500/40" strokeWidth={0.5} />
+           <Satellite className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] text-zinc-500/40" strokeWidth={0.5} />
         </motion.div>
 
         {/* Orbital Satellite Beta - Right to Left */}
         <motion.div
-          animate={{ right: ['-30%', '120%'], top: ['60%', '30%'], rotate: [-20, 10] }}
-          transition={{ duration: 65, repeat: Infinity, ease: "linear", delay: 10 }}
-          className="absolute z-0 opacity-10 pointer-events-none drop-shadow-[0_0_50px_rgba(20,184,166,0.3)] scale-x-[-1]"
+           animate={{ right: ['-30%', '120%'], top: ['60%', '30%'], rotate: [-20, 10] }}
+           transition={{ duration: 65, repeat: Infinity, ease: "linear", delay: 10 }}
+           className="absolute z-0 opacity-10 pointer-events-none drop-shadow-[0_0_50px_rgba(20,184,166,0.3)] scale-x-[-1]"
         >
-          <Satellite className="w-[200px] h-[200px] md:w-[450px] md:h-[450px] text-zinc-600/30" strokeWidth={0.5} />
+           <Satellite className="w-[200px] h-[200px] md:w-[450px] md:h-[450px] text-zinc-600/30" strokeWidth={0.5} />
         </motion.div>
-
+        
         {/* Perspective Grid with Scanning Laser */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.08)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)] [transform:rotateX(60deg)_scale(2.5)] origin-bottom opacity-40" />
-
+        
         <motion.div
           animate={{ top: ['0%', '100%'] }}
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -89,7 +64,7 @@ export default function Hero() {
         >
           <Satellite className="w-8 h-8 text-emerald-400/80" />
         </motion.div>
-
+        
         <motion.div
           animate={{ y: [0, 25, 0], rotate: [0, -10, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
@@ -97,7 +72,7 @@ export default function Hero() {
         >
           <ShieldAlert className="w-10 h-10 text-cyan-400/80" />
         </motion.div>
-
+        
         <motion.div
           animate={{ y: [0, -15, 0], scale: [1, 1.05, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
@@ -130,9 +105,9 @@ export default function Hero() {
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
           </div>
-
+          
           {/* Main Headline */}
-          <h1
+          <h1 
             style={{ fontFamily: "'Bruno Ace SC', sans-serif" }}
             className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-zinc-200 to-zinc-600 tracking-[0.1em] md:tracking-[0.2em] uppercase leading-tight mb-8 pb-2 drop-shadow-2xl"
           >
@@ -172,7 +147,7 @@ export default function Hero() {
             <span className="relative z-10">Launch Dashboard</span>
             <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
           </Link>
-
+          
           {/* Secondary CTA */}
           <a
             href="#demo"
@@ -184,7 +159,7 @@ export default function Hero() {
           </a>
         </motion.div>
       </div>
-
+      
       {/* 
         ========================================
         Bottom Fade Alpha Matte
