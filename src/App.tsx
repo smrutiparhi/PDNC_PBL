@@ -7,10 +7,8 @@ import Landing from './pages/Landing';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 import Login from './pages/Login';
 
-// Real Google OAuth is enabled only when both flag and client ID are present.
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const GOOGLE_AUTH_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === 'true';
-const useGoogleAuth = GOOGLE_AUTH_ENABLED && GOOGLE_CLIENT_ID.trim().length > 0;
+// Requires VITE_GOOGLE_CLIENT_ID in .env or defaults to a mock for preview purposes
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1046187766205-1a2b3c4d5e6f7g8h9i0j.apps.googleusercontent.com';
 
 // Auth Guard component to protect the dashboard
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -23,26 +21,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function App() {
-  const appRoutes = (
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/dashboard" 
+          <Route
+            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Suspense fallback={<div className="min-h-screen bg-[#020202] text-zinc-500 flex items-center justify-center">Loading dashboard...</div>}>
+                  <Dashboard />
+                </Suspense>
               </ProtectedRoute>
-            } 
+            }
           />
         </Routes>
       </BrowserRouter>
-  );
-
-  return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "dummy-id"}>
-      {appRoutes}
     </GoogleOAuthProvider>
   );
 }

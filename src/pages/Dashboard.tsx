@@ -47,31 +47,22 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 
 const buildLossCurve = (profile: ImageProfile, threshold: number): LossPoint[] => {
   const points: LossPoint[] = [];
-  
-  // Base values heavily influenced by image complexity and brightness
-  const complexityFactor = profile.edgeLike * 0.4 + profile.variance * 0.3;
-  const startVal = 0.080 + complexityFactor * 0.15 + (1 - profile.brightness) * 0.05;
-  const endVal = clamp(startVal * (0.35 - profile.variance * 0.1), 0.02, 0.08);
-  
-  const startTrain = startVal * 1.5 + threshold * 0.5;
-  const endTrain = endVal + 0.01 + profile.variance * 0.02;
-
-  // Decay rates now depend on image properties
-  const valDecay = 2.0 + profile.edgeLike * 2.5; 
-  const trainDecay = 1.8 + profile.brightness * 1.5;
+  const startVal = 0.050 + profile.variance * 0.055 + profile.edgeLike * 0.02;
+  const endVal = clamp(startVal * (0.72 - profile.variance * 0.22), 0.016, 0.12);
+  const startTrain = startVal * 1.95 + (1 - profile.brightness) * 0.018 + threshold * 0.2;
+  const endTrain = endVal + 0.014 + profile.variance * 0.01;
 
   for (let epoch = 1; epoch <= 30; epoch += 1) {
     const t = (epoch - 1) / 29;
-    const valBase = endVal + (startVal - endVal) * Math.exp(-valDecay * t);
-    const trainBase = endTrain + (startTrain - endTrain) * Math.exp(-trainDecay * t);
+    const valBase = endVal + (startVal - endVal) * Math.exp(-2.6 * t);
+    const trainBase = endTrain + (startTrain - endTrain) * Math.exp(-2.2 * t);
 
-    // Dynamic jitter based on seed and image variance
-    const valJitter = (seededNoise(profile.seed, epoch) - 0.5) * (0.002 + profile.variance * 0.005);
-    const trainJitter = (seededNoise(profile.seed + 17, epoch) - 0.5) * (0.012 + profile.edgeLike * 0.01);
+    const valJitter = (seededNoise(profile.seed, epoch) - 0.5) * 0.0018;
+    const trainJitter = (seededNoise(profile.seed + 17, epoch) - 0.5) * 0.010;
 
-    const val = clamp(valBase + valJitter, 0.01, 0.5);
-    const minTrain = val + 0.005;
-    const train = clamp(Math.max(minTrain, trainBase + trainJitter), minTrain, 0.6);
+    const val = clamp(valBase + valJitter, 0.012, 0.30);
+    const minTrain = val + 0.006;
+    const train = clamp(Math.max(minTrain, trainBase + trainJitter), minTrain, 0.40);
 
     points.push({
       epoch,
@@ -186,20 +177,12 @@ const profileImage = async (file: File): Promise<ImageProfile> => {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('scan');
   const [image, setImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Pipeline State
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
-  const [results, setResults] = useState<{ 
-    score: number; 
-    isAnomaly: boolean; 
-    ssim: number; 
-    psnr: number;
-    reconstructed?: string;
-    heatmap?: string;
-  } | null>(null);
+  const [results, setResults] = useState<{ score: number; isAnomaly: boolean; ssim: number; psnr: number } | null>(null);
   const [threshold, setThreshold] = useState(0.015);
   
   // Toaster State
@@ -209,19 +192,18 @@ export default function Dashboard() {
 
   const yRange = React.useMemo(() => {
     if (!lossSeries.length) {
-      return { minY: 0.0, maxY: 0.15 };
+      return { minY: 0.01, maxY: 0.1 };
     }
 
-    const values = lossSeries.flatMap((p: LossPoint) => [p.train, p.val]);
+    const values = lossSeries.flatMap((p) => [p.train, p.val]);
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
-    
-    // Stabilize the view: Always show at least 0 to 0.15 range 
-    // unless the data goes outside it. This makes shifts visible.
-    const minY = Math.min(0, minValue * 0.8);
-    const maxY = Math.max(0.15, maxValue * 1.1);
+    const span = Math.max(0.01, maxValue - minValue);
 
-    return { minY, maxY };
+    return {
+      minY: Math.max(0, minValue - span * 0.15),
+      maxY: maxValue + span * 0.15,
+    };
   }, [lossSeries]);
 
   const trainPath = React.useMemo(() => buildSvgPath(lossSeries, 'train', yRange.minY, yRange.maxY), [lossSeries, yRange]);
@@ -233,14 +215,13 @@ export default function Dashboard() {
 
   const addToast = (message: string, type: 'success' | 'error' | 'info') => {
     const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev: Toast[]) => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts((prev: Toast[]) => prev.filter((t: Toast) => t.id !== id));
+      setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   };
 
   const handleImageSelect = (file: File) => {
-    setSelectedFile(file);
     profileImage(file)
       .then((profile) => {
         setImageProfile(profile);
@@ -261,82 +242,49 @@ export default function Dashboard() {
     reader.readAsDataURL(file);
   };
 
-  const executeInference = async () => {
-    if (!image || !selectedFile) return;
+  const executeInference = () => {
+    if (!image) return;
     setIsAnalyzing(true);
     setResults(null);
     setLogs([]);
     setProgress(0);
     
-    // Initial logs for aesthetics
-    setLogs(["Initializing Residual Autoencoder (ResNet-50 backbone)..."]);
-    setProgress(10);
+    // Simulate complex pipeline
+    const pipeline = [
+      { time: 0, progress: 10, log: "Initializing Residual Autoencoder (ResNet-50 backbone)..." },
+      { time: 600, progress: 25, log: "Preprocessing: Resizing to 256x256, applying normalization..." },
+      { time: 1200, progress: 45, log: "Forward pass: Encoding spatial features to latent space (16x16x512)..." },
+      { time: 1800, progress: 65, log: "Forward pass: Decoding latent representation..." },
+      { time: 2400, progress: 85, log: "Computing pixel-wise MSE and Structural Similarity (SSIM)..." },
+      { time: 3000, progress: 95, log: "Applying Gaussian smoothing to error heatmap..." },
+      { time: 3500, progress: 100, log: "Thresholding and final classification complete." }
+    ];
 
     addToast("Inference pipeline started.", "info");
 
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      
-      const startTime = Date.now();
-      
-      // Simulate frontend steps while waiting for API
+    pipeline.forEach(step => {
       setTimeout(() => {
-        setLogs((prev: string[]) => [...prev, "Preprocessing: Resizing to 256x256, applying normalization..."]);
-        setProgress(25);
-      }, 500);
+        setLogs(prev => [...prev, step.log]);
+        setProgress(step.progress);
+      }, step.time);
+    });
 
-      const response = await fetch(`http://localhost:8000/analyze?threshold=${threshold}`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("API request failed");
-      }
-
-      const apiResult = await response.json();
-      
-      // Ensure minimum analysis time for UX
-      const elapsed = Date.now() - startTime;
-      const delay = Math.max(0, 3000 - elapsed);
-      
-      setTimeout(() => {
-        setLogs((prev: string[]) => [
-          ...prev, 
-          "Forward pass: Decoding latent representation...",
-          "Computing pixel-wise MSE and Structural Similarity (SSIM)...",
-          "Applying Gaussian smoothing to error heatmap...",
-          "Thresholding and final classification complete."
-        ]);
-        setProgress(100);
-        setIsAnalyzing(false);
-        
-        setResults({
-          score: apiResult.score,
-          isAnomaly: apiResult.isAnomaly,
-          ssim: 0.98 - (apiResult.score * 5), // Keep ssim/psnr as calculated mocks or add to API
-          psnr: 35 - (apiResult.score * 200),
-          reconstructed: apiResult.images.reconstructed,
-          heatmap: apiResult.images.heatmap
-        });
-
-        addToast(
-          apiResult.isAnomaly ? "CRITICAL: Anomaly detected in scan!" : "Scan complete. No anomalies detected.", 
-          apiResult.isAnomaly ? "error" : "success"
-        );
-      }, delay);
-
-    } catch (error) {
-      console.error("AI Analysis failed:", error);
+    setTimeout(() => {
       setIsAnalyzing(false);
-      addToast("AI Engine Offline: Please ensure the Python backend is running.", "error");
-    }
+      const mockScore = Math.random() * 0.03; 
+      const isAnomaly = mockScore > threshold;
+      setResults({
+        score: mockScore,
+        isAnomaly,
+        ssim: 0.98 - (mockScore * 5),
+        psnr: 35 - (mockScore * 200)
+      });
+      addToast(isAnomaly ? "CRITICAL: Anomaly detected in scan!" : "Scan complete. No anomalies detected.", isAnomaly ? "error" : "success");
+    }, 4000);
   };
 
   const resetTarget = () => {
     setImage(null);
-    setSelectedFile(null);
     setResults(null);
     setLogs([]);
     setProgress(0);
@@ -470,12 +418,7 @@ export default function Dashboard() {
                     <div className="flex flex-col gap-8">
                       {/* Advanced Top Viewer Block */}
                       <div className="relative">
-                        <HeatmapViewer 
-                          image={image} 
-                          isAnomaly={results?.isAnomaly ?? false} 
-                          reconstructedImage={results?.reconstructed}
-                          heatmapImage={results?.heatmap}
-                        />
+                        <HeatmapViewer image={image} isAnomaly={results?.isAnomaly ?? false} />
                         
                         {/* Dynamic Scan Overlay */}
                         {isAnalyzing && (
@@ -600,31 +543,31 @@ export default function Dashboard() {
       {/* Global Toast Overlay */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-[320px]">
         <AnimatePresence>
-              {toasts.map((toast: Toast) => (
-                <motion.div
-                  key={toast.id}
-                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
-                  className={cn(
-                    "p-4 rounded-xl border shadow-2xl backdrop-blur-md flex items-start gap-3 relative overflow-hidden",
-                    toast.type === 'success' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
-                    toast.type === 'error' ? "bg-rose-500/10 border-rose-500/30 text-rose-400" :
-                    "bg-zinc-900 border-zinc-800 text-zinc-300"
-                  )}
-                >
-                  {toast.type === 'success' && <CheckCircle className="w-5 h-5 shrink-0" />}
-                  {toast.type === 'error' && <AlertTriangle className="w-5 h-5 shrink-0" />}
-                  {toast.type === 'info' && <RefreshCw className="w-5 h-5 shrink-0 animate-spin" />}
-                  <span className="text-sm font-medium leading-tight pt-0.5">{toast.message}</span>
-                  <button 
-                    className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300"
-                    onClick={() => setToasts((prev: Toast[]) => prev.filter((t: Toast) => t.id !== toast.id))}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </motion.div>
-              ))}
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 50, scale: 0.9 }}
+              className={cn(
+                "p-4 rounded-xl border shadow-2xl backdrop-blur-md flex items-start gap-3 relative overflow-hidden",
+                toast.type === 'success' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
+                toast.type === 'error' ? "bg-rose-500/10 border-rose-500/30 text-rose-400" :
+                "bg-zinc-900 border-zinc-800 text-zinc-300"
+              )}
+            >
+              {toast.type === 'success' && <CheckCircle className="w-5 h-5 shrink-0" />}
+              {toast.type === 'error' && <AlertTriangle className="w-5 h-5 shrink-0" />}
+              {toast.type === 'info' && <RefreshCw className="w-5 h-5 shrink-0 animate-spin" />}
+              <span className="text-sm font-medium leading-tight pt-0.5">{toast.message}</span>
+              <button 
+                className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300"
+                onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </motion.div>
+          ))}
         </AnimatePresence>
       </div>
     </div>
